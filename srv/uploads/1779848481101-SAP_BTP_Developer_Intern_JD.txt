@@ -1,0 +1,34 @@
+SAP BTP Developer Intern
+
+Location: Remote / Hybrid
+
+Required Skills:
+- SAP BTP
+- SAP Fiori/UI5
+- ABAP
+- OData V2/V4
+- CDS Views
+- SAP RAP
+- Cloud Foundry
+- Git
+- REST APIs
+- Agile Methodologies
+
+Responsibilities:
+- Develop SAP Fiori/UI5 applications
+- Build and consume OData services
+- Create CDS Views and backend services
+- Work on SAP RAP applications
+- Deploy applications on SAP BTP Cloud Foundry
+- Integrate frontend and backend systems
+- Collaborate with Agile development teams
+- Debug and optimize SAP applications
+
+Preferred Qualifications:
+- Knowledge of SAP Launchpad Service
+- Understanding of SAP HANA
+- Familiarity with SAP BAS
+- Strong debugging and problem-solving skills
+
+Internship Duration:
+3–6 Months

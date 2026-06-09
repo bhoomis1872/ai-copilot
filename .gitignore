@@ -1,0 +1,10 @@
+.env
+.env.*
+default-env.json
+node_modules/
+dist/
+
+db.sqlite
+db.sqlite-shm
+db.sqlite-wal
+

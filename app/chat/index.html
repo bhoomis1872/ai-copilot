@@ -1,0 +1,2690 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <title>SAP AI Copilot</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+
+/* ========================= */
+/* ANALYTICS DASHBOARD */
+/* ========================= */
+
+#dashboard {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 16px;
+
+  margin: 18px 0;
+}
+
+.dashboard-card {
+
+    background:
+      rgba(255,255,255,0.08);
+
+    backdrop-filter:
+      blur(18px);
+
+    -webkit-backdrop-filter:
+      blur(18px);
+
+    border:
+      1px solid rgba(255,255,255,0.1);
+
+    border-radius: 22px;
+
+    padding: 24px;
+
+    min-width: 250px;
+
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.35);
+
+    transition:
+      transform 0.35s ease,
+      box-shadow 0.35s ease,
+      border 0.35s ease;
+
+    position: relative;
+
+    overflow: hidden;
+}
+.dashboard-card:hover {
+
+    transform:
+      translateY(-8px)
+      scale(1.02);
+
+    box-shadow:
+      0 12px 40px rgba(59,130,246,0.35);
+
+    border:
+      1px solid rgba(125,211,252,0.35);
+}
+.dashboard-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: -50%;
+
+    left: -50%;
+
+    width: 200%;
+
+    height: 200%;
+
+    background:
+      linear-gradient(
+        45deg,
+        transparent,
+        rgba(255,255,255,0.05),
+        transparent
+      );
+
+    transform:
+      rotate(25deg);
+
+    pointer-events: none;
+}
+
+.dashboard-card h3 {
+
+  margin-top: 0;
+
+  color: #7dd3fc;
+
+  font-size: 18px;
+}
+
+.score {
+
+  font-size: 40px;
+
+  font-weight: bold;
+
+  color: #4ade80;
+}
+
+.skill-chip {
+
+  display: inline-block;
+
+  background: #2563eb;
+
+  padding: 6px 12px;
+
+  border-radius: 999px;
+
+  margin: 4px;
+
+  font-size: 13px;
+}
+
+.skill-chip.missing {
+
+  background: #dc2626;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background:
+  radial-gradient(
+    circle at top left,
+    #3b3f5c,
+    #252736 60%
+  );
+}
+
+/* ========================= */
+/* APP LAYOUT */
+/* ========================= */
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #2f3142;
+}
+
+/* ========================= */
+/* SIDEBAR */
+/* ========================= */
+
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    padding: 20px;
+    background: rgba(0,0,0,0.15);
+    border-right:
+      1px solid rgba(255,255,255,0.08);
+}
+
+/* NEW CHAT BUTTON */
+
+.new-chat {
+
+    width: 220px;
+
+    padding: 16px;
+
+    border-radius: 14px;
+
+    background: rgba(255,255,255,0.08);
+
+    color: white;
+
+    cursor: pointer;
+
+    margin-bottom: 16px;
+
+    transition: 0.25s;
+}
+
+.new-chat:hover {
+
+    background: rgba(255,255,255,0.14);
+}
+
+/* HISTORY ITEMS */
+
+.history-item {
+
+    width: 220px;
+
+    padding: 14px;
+
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.08);
+
+    color: white;
+
+    margin-bottom: 10px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.history-item:hover {
+
+    background: rgba(255,255,255,0.14);
+
+}
+
+/* ========================= */
+/* MAIN CHAT AREA */
+/* ========================= */
+
+.chat {
+
+    flex: 1;
+
+    width: 100%;
+
+    max-width: 1600px;
+
+    margin: auto;
+
+    padding: 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+
+    box-sizing: border-box;
+
+}
+
+.subtitle {
+    color: rgba(255,255,255,0.6);
+    margin-top: -6px;
+    margin-bottom: 10px;
+}
+
+/* ========================= */
+/* MESSAGE CONTAINER */
+/* ========================= */
+
+.messages {
+
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding: 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    align-items: flex-start;
+}
+
+.messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+}
+
+/* ========================= */
+/* CHAT BUBBLES */
+/* ========================= */
+
+.msg {
+
+    display: flex;
+
+    width: 100%;
+
+    margin-bottom: 8px;
+}
+
+h2 {
+    color: white;
+    margin-bottom: 2px;
+}
+
+.subtitle {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+/* USER ROW */
+
+.msg.user {
+
+    justify-content: flex-end;
+
+}
+
+/* BOT ROW */
+
+.msg.bot {
+
+    justify-content: flex-start;
+
+}
+
+/* CHAT ITEM */
+
+.chat-item {
+
+    max-width: 82%;
+
+    padding: 12px 16px;
+
+    border-radius: 16px;
+
+    font-size: 15px;
+
+    line-height: 1.4;
+
+    white-space: normal;
+
+    word-break: break-word;
+
+    overflow-wrap: break-word;
+
+    box-shadow:
+      0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* MARKDOWN FIXES */
+
+.chat-item p {
+    margin: 2px 0;
+    line-height: 1.4;
+}
+
+.chat-item ul,
+.chat-item ol {
+    margin: 2px 0 2px 18px;
+}
+
+.chat-item li {
+    margin: 2px 0;
+    line-height: 1.4;
+}
+
+.chat-item h1,
+.chat-item h2,
+.chat-item h3,
+.chat-item h4 {
+
+    margin-top: 4px;
+    margin-bottom: 2px;
+
+    line-height: 1.2;
+
+    font-weight: 600;
+}
+
+.chat-item h1 {
+    font-size: 22px;
+}
+
+.chat-item h2 {
+    font-size: 18px;
+}
+
+.chat-item h3 {
+    font-size: 16px;
+}
+
+.chat-item h4 {
+    font-size: 15px;
+}
+
+.chat-item br {
+    display: none;
+}
+
+/* USER MESSAGE */
+
+.user .chat-item {
+
+    background: #0b74de;
+
+    color: white;
+
+    margin-left: auto;
+
+    border-bottom-right-radius: 8px;
+
+}
+
+/* BOT MESSAGE */
+
+.bot .chat-item {
+
+    background: #5f6178;
+
+    color: white;
+
+    display: inline-block;
+
+    width: auto;
+
+    max-width: 75%;
+
+    padding: 10px 14px;
+
+    border-radius: 14px;
+
+    font-size: 15px;
+
+    line-height: 1.45;
+
+    white-space: normal;
+
+    word-break: break-word;
+
+    overflow-wrap: break-word;
+
+    box-shadow:
+      0 2px 8px rgba(0,0,0,0.12);
+
+    margin: 0;
+}
+
+.bot .chat-item > *:first-child {
+    margin-top: 0 !important;{msg.content}
+}
+
+.bot .chat-item > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* REMOVE HUGE MARKDOWN SPACING */
+
+.bot .chat-item p {
+    margin: 4px 0;
+}
+
+.bot .chat-item ul,
+.bot .chat-item ol {
+    margin: 4px 0 4px 18px;
+    padding: 0;
+}
+
+.bot .chat-item li {
+    margin: 2px 0;
+    line-height: 1.4;
+}
+
+.bot .chat-item h1,
+.bot .chat-item h2,
+.bot .chat-item h3,
+.bot .chat-item h4 {
+    margin: 6px 0 4px;
+}
+
+.chat-item br {
+    line-height: 1.2;
+}
+
+.bot pre {
+
+  background: #1e1e1e;
+
+  color: #00ff90;
+
+  padding: 16px;
+
+  border-radius: 12px;
+
+  overflow-x: auto;
+
+  margin-top: 16px;
+
+  font-size: 16px;
+}
+pre code {
+
+  display: block;
+
+  overflow-x: auto;
+
+  padding: 16px;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+
+  line-height: 1.6;
+}
+/* ========================= */
+/* INPUT PANEL */
+/* ========================= */
+
+.input-panel {
+
+    background: rgba(255,255,255,0.06);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    padding: 20px;
+
+    border-radius: 22px;
+
+    margin-top: 12px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 16px;
+
+    box-shadow:
+      0 8px 24px rgba(0,0,0,0.25);
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+}
+/* ========================= */
+/* INPUTS */
+/* ========================= */
+
+input:not([type="file"]),
+textarea {
+
+    width: 100%;
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    border: none;
+
+    box-sizing: border-box;
+
+    font-size: 16px;
+}
+
+.upload-row {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 18px 0;
+
+    flex-wrap: wrap;
+}
+
+.upload-row input[type="file"] {
+    width: auto;
+}
+
+/* ========================= */
+/* BUTTONS */
+/* ========================= */
+
+button {
+
+    padding: 12px 18px;
+
+    border-radius: 10px;
+
+    border: none;
+
+    background: #0b74de;
+
+    color: white;
+
+    cursor: pointer;
+
+    transition: 0.3s;
+
+    font-weight: bold;
+}
+
+button:hover {
+
+    background: #095cb5;
+}
+
+/* ========================= */
+/* DASHBOARD */
+/* ========================= */
+
+.dashboard-card {
+
+    background:
+      rgba(255,255,255,0.08);
+
+    border:
+      1px solid rgba(255,255,255,0.1);
+
+    backdrop-filter:
+      blur(10px);
+
+    border-radius: 18px;
+
+    padding: 22px;
+
+    min-width: 250px;
+
+    box-shadow:
+      0 8px 24px rgba(0,0,0,0.3);
+
+    transition:
+      all 0.3s ease;
+}
+
+.dashboard-card:hover {
+
+    transform:
+      translateY(-5px);
+
+    box-shadow:
+      0 12px 30px rgba(0,0,0,0.5);
+}
+
+/* ========================= */
+/* SKILL TAGS */
+/* ========================= */
+
+.skill-tag {
+
+    display:inline-block;
+
+    background:
+      linear-gradient(
+        135deg,
+        #0b74de,
+        #2563eb
+      );
+
+    padding:10px 16px;
+
+    border-radius:20px;
+
+    margin:6px;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    color:white;
+
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+}
+.skill-tag:hover {
+
+    transform:
+      scale(1.08);
+
+    box-shadow:
+      0 0 18px rgba(59,130,246,0.5);
+}
+/* ========================= */
+/* EMPTY STATE */
+/* ========================= */
+
+.empty-state {
+
+    color: rgba(255,255,255,0.6);
+
+    font-size: 18px;
+
+    text-align: center;
+
+    margin: auto;
+}
+
+/* ========================= */
+/* JD BOX */
+/* ========================= */
+
+.jd-box {
+
+    width: 100%;
+
+    min-height: 180px;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    border: none;
+
+    resize: vertical;
+
+    box-sizing: border-box;
+}
+
+/* ========================= */
+/* ANIMATION */
+/* ========================= */
+
+@keyframes fadeIn {
+
+    from {
+
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================= */
+/* TYPING INDICATOR */
+/* ========================= */
+
+.typing-dots {
+
+  display: inline-flex;
+
+  gap: 2px;
+
+  margin-right: 8px;
+
+  font-weight: bold;
+
+  color: #7dd3fc;
+
+  animation:
+    blink 1s infinite;
+}
+
+@keyframes blink {
+
+  0% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.3;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="new-chat"
+      onclick="createNewChat()">
+
+      + New Chat
+
+    </div>
+
+    <div id="chatList"></div>
+
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat">
+
+    <h2>🤖 SAP AI Copilot</h2>
+    <p class="subtitle">
+  Intelligent Resume & Job Matching Assistant
+</p>
+    <!-- ========================= -->
+<!-- AI RESUME DASHBOARD -->
+<!-- ========================= -->
+
+<div
+  id="resumeDashboard"
+  style="
+display:grid;
+grid-template-columns:
+repeat(auto-fit,minmax(280px,1fr));
+gap:20px;
+margin-bottom:20px;
+  ">
+</div>
+
+<div
+  id="analyticsSection"
+  style="display:none;">
+</div>
+
+    <div id="messages" class="messages">
+<div id="dashboard"></div>
+
+</div>
+    <!-- FILE UPLOAD -->
+<div class="upload-row">
+
+  <input
+    type="file"
+    id="fileInput" />
+
+  <button onclick="uploadFile()">
+    Upload File
+  </button>
+
+  <button onclick="downloadReport()">
+  Download AI Report
+</button>
+
+</div>
+
+<br />
+
+<div class="input-panel">
+
+  <!-- CHAT INPUT -->
+  <input
+    id="input"
+    placeholder="Ask something..." />
+
+  <br /><br />
+
+  <!-- JD INPUT -->
+  <textarea
+  id="jdInput"
+  class="jd-box"
+  placeholder="Paste Job Description...">
+</textarea>
+
+  <br />
+
+  <button onclick="send()">
+    Send
+  </button>
+
+  <button onclick="matchResume()">
+    Match Resume
+  </button>
+
+</div>
+
+  <script>
+
+async function downloadReport() {
+
+  if (!window.latestMatchData) {
+
+    alert(
+      "No report available yet."
+    );
+
+    return;
+  }
+
+  const {
+    jsPDF
+  } = window.jspdf;
+
+  const doc =
+    new jsPDF();
+
+  // GET DATA
+  const data =
+    window.latestMatchData;
+
+  // SAFE VALUES
+  const matchScore =
+    data.matchScore || 0;
+
+  const matchedSkills =
+    data.matchedSkills || [];
+
+  const missingSkills =
+    data.missingSkills || [];
+
+  const recommendation =
+    data.recommendation || "";
+
+  // TITLE
+  doc.setFontSize(24);
+
+  doc.text(
+    "SAP AI Resume Report",
+    20,
+    30
+  );
+
+  // SCORE
+  doc.setFontSize(16);
+
+  doc.text(
+    `Match Score: ${matchScore}%`,
+    20,
+    60
+  );
+
+  // MATCHED
+  doc.text(
+    "Matched Skills:",
+    20,
+    90
+  );
+
+  doc.setFontSize(13);
+
+  doc.text(
+    matchedSkills.join(", "),
+    20,
+    105
+  );
+
+  // MISSING
+  doc.setFontSize(16);
+
+  doc.text(
+    "Missing Skills:",
+    20,
+    140
+  );
+
+  doc.setFontSize(13);
+
+  doc.text(
+    missingSkills.join(", ") || "None",
+    20,
+    155
+  );
+
+  // RECOMMENDATION
+  doc.setFontSize(16);
+
+  doc.text(
+    "Recommendation:",
+    20,
+    190
+  );
+
+  doc.setFontSize(13);
+
+  const splitText =
+    doc.splitTextToSize(
+      recommendation,
+      170
+    );
+
+  doc.text(
+    splitText,
+    20,
+    205
+  );
+
+  // SAVE PDF
+  doc.save(
+    "SAP_AI_Report.pdf"
+  );
+}
+
+    const messagesDiv =
+      document.getElementById("messages");
+
+    const chatList =
+      document.getElementById("chatList");
+
+    const input =
+      document.getElementById("input");
+
+      input.addEventListener(
+  "keypress",
+  function(e) {
+
+    if (e.key === "Enter") {
+      send();
+    }
+  }
+);
+
+    let conversationID =
+      localStorage.getItem("convId");
+      if (!conversationID) {
+
+  conversationID =
+    crypto.randomUUID();
+
+  localStorage.setItem(
+    "convId",
+    conversationID
+  );
+}
+
+    let chatHistory = [];
+
+function renderAnalytics(data) {
+
+  const dashboard =
+    document.getElementById(
+      "dashboard"
+    );
+
+  dashboard.innerHTML = "";
+
+  // SCORE CARD
+  const scoreCard =
+    document.createElement("div");
+
+  scoreCard.className =
+    "dashboard-card";
+
+  scoreCard.innerHTML = `
+
+    <h3>Match Score</h3>
+
+    <div class="score">
+      ${data.matchScore}/10
+    </div>
+  `;
+
+  dashboard.appendChild(
+    scoreCard
+  );
+
+  // MATCHED SKILLS
+  const matched =
+    document.createElement("div");
+
+  matched.className =
+    "dashboard-card";
+
+  matched.innerHTML = `
+
+    <h3>Matched Skills</h3>
+
+    ${data.matchedSkills
+      .map(skill => `
+
+        <span class="skill-chip">
+          ${skill}
+        </span>
+
+      `)
+      .join("")}
+  `;
+
+  dashboard.appendChild(
+    matched
+  );
+
+  // MISSING SKILLS
+  const missing =
+    document.createElement("div");
+
+  missing.className =
+    "dashboard-card";
+
+  missing.innerHTML = `
+
+    <h3>Missing Skills</h3>
+
+    ${data.missingSkills
+      .map(skill => `
+
+        <span class="skill-chip missing">
+          ${skill}
+        </span>
+
+      `)
+      .join("")}
+  `;
+
+  dashboard.appendChild(
+    missing
+  );
+
+  // RECOMMENDATION
+  const recommendation =
+    document.createElement("div");
+
+  recommendation.className =
+    "dashboard-card";
+
+  recommendation.style.flex =
+    "1";
+
+  recommendation.innerHTML = `
+
+    <h3>Recommendation</h3>
+
+    <p>
+      ${data.recommendation}
+    </p>
+  `;
+
+  dashboard.appendChild(
+    recommendation
+  );
+}
+
+    // =========================
+// ANALYSIS DASHBOARD
+// =========================
+function renderAnalysisCards(data) {
+
+  const dashboard =
+    document.getElementById(
+      "resumeDashboard"
+    );
+
+  dashboard.innerHTML = "";
+
+  // SCORE CARD
+  if (data.score !== undefined) {
+
+  const scoreCard =
+  document.createElement("div");
+
+scoreCard.className =
+  "dashboard-card";
+  scoreCard.innerHTML = `
+
+    <h2>
+      📊 Resume Score
+    </h2>
+
+    <h1>
+      ${data.score}/${data.maxScore || 10}
+    </h1>
+  `;
+
+  dashboard.appendChild(
+    scoreCard
+  );
+}
+
+  // SKILLS CARD
+  if (
+  data.skills &&
+  data.skills.length
+) {
+
+  const skillsCard =
+  document.createElement("div");
+
+skillsCard.className =
+  "dashboard-card";
+  
+  skillsCard.innerHTML = `
+
+    <h2>
+      🛠 Skills
+    </h2>
+
+    ${
+      (data.skills || [])
+        .map(s =>
+  `<span class="skill-tag">
+    ${s}
+  </span>`
+)
+        .join("")
+    }
+  `;
+
+  dashboard.appendChild(skillsCard);
+}
+
+  // STRENGTHS CARD
+if (
+  data.strengths &&
+  data.strengths.length
+) {
+
+  const strengthsCard =
+    document.createElement("div");
+
+  strengthsCard.className =
+    "dashboard-card";
+
+  strengthsCard.innerHTML = `
+
+    <h2>
+      💪 Strengths
+    </h2>
+
+    ${
+      (data.strengths || [])
+        .map(s =>
+          `<span class="skill-tag">
+            ${s}
+          </span>`
+        )
+        .join("")
+    }
+  `;
+
+  dashboard.appendChild(
+    strengthsCard
+  );
+}
+}
+
+// =========================
+// RESUME MATCH CARDS
+// =========================
+function renderResumeCards(matches) {
+
+  const dashboard =
+    document.getElementById(
+      "resumeDashboard"
+    );
+
+  dashboard.innerHTML = "";
+
+  matches.forEach(m => {
+
+   const card =
+  document.createElement("div");
+
+card.className =
+  "dashboard-card";
+    card.innerHTML = `
+
+      <h3>
+        👤 ${m.candidate}
+      </h3>
+
+      <p>
+        ⭐ Match Score:
+        <b>${m.score}</b>
+      </p>
+
+      <p>
+        📌 ${m.reason}
+      </p>
+    `;
+
+    dashboard.appendChild(card);
+  });
+}
+
+function renderMatchDashboard(data) {
+
+  const dashboard =
+    document.getElementById(
+      "resumeDashboard"
+    );
+
+  dashboard.innerHTML = "";
+
+  // MATCH SCORE
+const scoreCard =
+  document.createElement("div");
+
+scoreCard.className =
+  "dashboard-card";
+
+scoreCard.innerHTML = `
+
+  <h2>
+    📊 JD Match
+  </h2>
+
+  <h1>
+    <div
+  class="score-number"
+  id="matchScore"
+>
+  0%
+</div>
+  </h1>
+`;
+
+dashboard.appendChild(scoreCard);
+animateScore(
+  Number(data.matchScore || data.score || 0)
+);
+
+function animateScore(target) {
+
+  const scoreEl =
+    document.getElementById(
+      "matchScore"
+    );
+
+  if (!scoreEl) return;
+
+  target = Math.round(target);
+
+  let current = 0;
+
+  const speed =
+    Math.max(
+      5,
+      150 / target
+    );
+
+  const interval =
+    setInterval(() => {
+
+      current++;
+
+      scoreEl.innerText =
+        current + "%";
+
+      if (current >= target) {
+
+        scoreEl.innerText =
+          target + "%";
+
+        clearInterval(
+          interval
+        );
+      }
+
+    }, speed);
+}
+// MATCHED SKILLS
+const matchCard =
+  document.createElement("div");
+
+matchCard.className =
+  "dashboard-card";
+
+matchCard.innerHTML = `
+
+  <h2>
+    ✅ Matched Skills
+  </h2>
+
+  ${
+    (data.matchedSkills || [])
+      .map(s =>
+        `<span class="skill-tag">
+          ${s}
+        </span>`
+      )
+      .join("")
+  }
+`;
+
+dashboard.appendChild(matchCard);
+
+// MISSING SKILLS
+const missingCard =
+  document.createElement("div");
+
+missingCard.className =
+  "dashboard-card";
+
+missingCard.innerHTML = `
+
+  <h2>
+    ❌ Missing Skills
+  </h2>
+
+  <h3>📊 Analytics</h3>
+<h3>📄 Resume Intelligence</h3>
+
+  ${
+    (data.missingSkills || [])
+      .map(s =>
+        `<span class="skill-tag">
+          ${s}
+        </span>`
+      )
+      .join("")
+  }
+`;
+
+dashboard.appendChild(
+  missingCard
+);
+      }
+
+      function showEmptyState() {
+
+  messagesDiv.innerHTML = `
+
+    <div class="empty-state">
+      Start chatting with SAP AI Copilot...
+    </div>
+
+  `;
+}
+
+function addMessage(text, type) {
+
+  if (
+    !text ||
+    text === "undefined" ||
+    text.trim() === ""
+  ) {
+    return;
+  }
+
+  // REMOVE EMPTY STATE
+  const empty =
+    document.querySelector(
+      ".empty-state"
+    );
+
+  if (empty) {
+    empty.remove();
+  }
+
+  // MAIN ROW
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "msg " + type;
+
+  // CHAT BUBBLE
+  const content =
+    document.createElement("div");
+
+  content.className =
+    "chat-item";
+
+  div.appendChild(content);
+
+  messagesDiv.appendChild(div);
+
+  // =========================
+  // FORMAT TEXT
+  // =========================
+
+  let formattedText = "";
+
+  if (typeof text === "object") {
+
+    formattedText =
+      marked.parse(
+        JSON.stringify(
+          text,
+          null,
+          2
+        )
+      );
+
+  } else {
+
+    const cleanText = text
+
+      .replace(/\n{3,}/g, "\n\n")
+
+      .replace(/\n\s+\•/g, "\n•")
+
+      .replace(/\n(?=#+)/g, "\n");
+
+    formattedText =
+      marked.parse(cleanText);
+  }
+
+  // =========================
+  // USER MESSAGE
+  // =========================
+
+  if (type === "user") {
+
+    content.innerHTML =
+      formattedText;
+
+    messagesDiv.scrollTop =
+      messagesDiv.scrollHeight;
+
+    return;
+  }
+
+  // =========================
+  // BOT TYPING EFFECT
+  // =========================
+
+  let i = 0;
+
+  const speed = 5;
+
+  const temp =
+    document.createElement("div");
+
+  temp.innerHTML =
+    formattedText;
+
+  const finalHTML =
+    temp.innerHTML;
+
+  const interval =
+    setInterval(() => {
+
+      content.innerHTML =
+        finalHTML.slice(0, i);
+
+      i++;
+
+      messagesDiv.scrollTop =
+        messagesDiv.scrollHeight;
+        
+    // SAVE CHAT
+localStorage.setItem(
+  "sap-chat-history",
+  messagesDiv.innerHTML
+);
+
+      if (i >= finalHTML.length) {
+
+        clearInterval(interval);
+
+        // HIGHLIGHT CODE
+        content
+          .querySelectorAll(
+            "pre code"
+          )
+          .forEach(block => {
+
+            hljs.highlightElement(
+              block
+            );
+
+          });
+      }
+
+    }, speed);
+
+}
+
+    // =========================
+    // NEW CHAT
+    // =========================
+
+function createNewChat() {
+
+    // Generate new conversation ID
+    conversationID =
+      crypto.randomUUID();
+
+    localStorage.setItem(
+      "convId",
+      conversationID
+    );
+
+    // Reset chat history
+    chatHistory = [];
+
+    // Clear messages only
+    messagesDiv.innerHTML = "";
+
+    localStorage.removeItem(
+  "sap-chat-history"
+);
+
+    // Show welcome state
+    showEmptyState();
+
+    // Clear dashboar
+
+document.getElementById(
+  "resumeDashboard"
+).innerHTML = "";
+
+
+    // Hide analytics
+    const analytics =
+      document.getElementById(
+        "analyticsSection"
+      );
+
+    if (analytics) {
+      analytics.style.display =
+        "none";
+    }
+
+    // Reset inputs
+    input.value = "";
+
+    const jdInput =
+      document.getElementById(
+        "jdInput"
+      );
+
+    if (jdInput) {
+      jdInput.value = "";
+    }
+
+    input.focus();
+}
+    // =========================
+    // LOAD CONVERSATIONS
+    // =========================
+    async function loadConversations() {
+
+      const res =
+        await fetch(
+          "/copilot/getConversations",
+          {
+            method: "POST"
+          }
+        );
+
+        const data =
+  await res.json();
+
+console.log(data);
+
+      chatList.innerHTML = "";
+
+      (data.value || []).forEach(c => {
+
+        const wrapper =
+          document.createElement("div");
+
+        wrapper.style.display = "flex";
+
+        const div =
+          document.createElement("div");
+
+        div.className = "history-item";
+
+        div.innerText =
+          c.title || "New Chat";
+
+        div.onclick = () => {
+
+          conversationID = c.ID;
+
+          localStorage.setItem(
+            "convId",
+            conversationID
+          );
+
+          loadHistory();
+        };
+
+        // DELETE
+        const del =
+          document.createElement("span");
+
+        del.innerText = "❌";
+
+        del.style.cursor = "pointer";
+
+        del.style.marginLeft = "10px";
+
+        del.onclick =
+          async (e) => {
+
+            e.stopPropagation();
+
+            await fetch(
+              "/copilot/deleteConversation",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body: JSON.stringify({
+                  conversationID: c.ID
+                })
+              }
+            );
+
+            showEmptyState();
+
+            loadConversations();
+          };
+
+        wrapper.appendChild(div);
+
+        wrapper.appendChild(del);
+
+        chatList.appendChild(wrapper);
+      });
+    }
+
+    // =========================
+    // LOAD HISTORY
+    // =========================
+    async function loadHistory() {
+
+    showEmptyState();
+
+      chatHistory = [];
+
+      const res =
+        await fetch(
+          "/copilot/getHistory",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              conversationID
+            })
+          }
+        );
+
+      const data =
+        await res.json();
+
+      (data.value || []).forEach(m => {
+
+        let parsed;
+
+        try {
+
+          parsed =
+            JSON.parse(m.content);
+
+        } catch {
+
+          parsed = {
+            text: m.content,
+            actions: []
+          };
+        }
+
+        const msgText =
+          parsed.text ||
+          parsed.message ||
+          m.content;
+
+        addMessage(
+          (m.role === "user"
+            ? "👤 "
+            : "🤖 ") + msgText,
+
+          m.role,
+
+          parsed.actions || []
+        );
+
+        chatHistory.push({
+          role: m.role,
+          content: msgText
+        });
+      });
+    }
+
+function renderAnalytics(data) {
+
+  const analytics =
+    document.getElementById(
+      "analyticsSection"
+    );
+
+analytics.innerHTML = `
+
+  <div class="dashboard-card"
+    style="
+      height:320px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    ">
+
+    <canvas
+      id="skillsChart"
+      style="
+        max-width:320px;
+        max-height:320px;
+      ">
+    </canvas>
+
+  </div>
+
+  <div class="dashboard-card"
+    style="
+      height:320px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    ">
+
+    <canvas
+      id="scoreChart"
+      style="
+        max-width:260px;
+        max-height:260px;
+      ">
+    </canvas>
+
+  </div>
+`;
+
+  analytics.style.display =
+    "grid";
+
+  // SKILLS CHART
+  new Chart(
+    document.getElementById(
+      "skillsChart"
+    ),
+    {
+      type: "radar",
+
+      data: {
+
+        labels:
+  data.matchedSkills || [],
+
+        datasets: [{
+
+          label:
+            "Skill Strength",
+
+         data:
+  (data.matchedSkills || [])
+    .map(() => 80),
+          fill: true,
+
+responsive: true,
+
+maintainAspectRatio: false
+        }]
+      }
+    }
+  );
+
+  // SCORE CHART
+  new Chart(
+  document.getElementById(
+    "scoreChart"
+  ),
+  {
+
+    options: {
+
+      responsive: true,
+
+      maintainAspectRatio: false
+    },
+      type: "doughnut",
+
+      data: {
+
+        labels: [
+          "Score",
+          "Remaining"
+        ],
+
+        datasets: [{
+
+          data: [
+  data.matchScore || 0,
+  10 - (data.matchScore || 0)
+]
+        }]
+      }
+    }
+  );
+}
+
+function typeMessage(element, text) {
+
+  let i = 0;
+
+  const interval = setInterval(() => {
+
+    element.innerHTML += text.charAt(i);
+
+    i++;
+
+    if (i >= text.length) {
+      clearInterval(interval);
+    }
+
+  }, 10);
+}
+    // =========================
+    // SEND MESSAGE
+    // =========================
+    async function send() {
+
+      const text =
+        input.value.trim();
+
+      if (!text) return;
+
+      addMessage(
+        "👤 " + text,
+        "user"
+      );
+
+// =========================
+// TYPING INDICATOR
+// =========================
+
+const typingDiv =
+  document.createElement("div");
+
+typingDiv.className =
+  "msg bot";
+
+typingDiv.id =
+  "typing-indicator";
+
+typingDiv.innerHTML = `
+
+  <div class="chat-item">
+
+    <span class="typing-dots">
+
+      <span>.</span>
+      <span>.</span>
+      <span>.</span>
+
+    </span>
+
+    AI is typing...
+
+  </div>
+`;
+
+messagesDiv.appendChild(
+  typingDiv
+);
+
+messagesDiv.scrollTop =
+  messagesDiv.scrollHeight;
+
+
+      chatHistory.push({
+        role: "user",
+        content: text
+      });
+
+      input.value = "";
+      input.focus();
+
+ // =====================================
+// AI RESUME SEARCH
+// =====================================
+
+const lowerText = text.toLowerCase();
+
+const isResumeSearch =
+
+  lowerText.startsWith("find candidate") ||
+
+  lowerText.startsWith("search resume") ||
+
+  lowerText.startsWith("find resume");
+
+if (isResumeSearch) {
+
+  const searchRes =
+    await fetch(
+
+      "/copilot/searchResumes",
+
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+          query: text
+        })
+      }
+    );
+
+  const searchData =
+    await searchRes.json();
+
+  let parsedSearch;
+
+  try {
+
+    parsedSearch =
+      JSON.parse(
+        searchData.value
+      );
+
+  } catch {
+
+    parsedSearch = {
+      text:
+        "Resume search failed."
+    };
+  }
+
+  // =====================================
+  // SHOW RESULT
+  // =====================================
+  if (
+    parsedSearch.matches &&
+    parsedSearch.matches.length
+  ) {
+
+    renderResumeCards(
+      parsedSearch.matches
+    );
+
+    addMessage(
+      "🤖 Found matching candidates.",
+      "bot"
+    );
+
+  } else {
+
+    addMessage(
+
+      "🤖\n\n" +
+
+      (
+        parsedSearch.text ||
+
+        JSON.stringify(
+          parsedSearch,
+          null,
+          2
+        )
+      ),
+
+      "bot"
+    );
+  }
+
+  return;
+}
+
+// =========================
+// STREAM RESPONSE
+// =========================
+
+const response =
+  await fetch(
+    "/stream-chat",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+
+      body: JSON.stringify({
+
+        message: text,
+
+        history: chatHistory,
+
+        conversationID
+      })
+    }
+  );
+
+// CREATE BOT MESSAGE
+const oldTyping =
+  document.getElementById(
+    "typing-indicator"
+  );
+
+if (oldTyping) {
+
+  oldTyping.remove();
+}
+const div =
+  document.createElement("div");
+
+div.className =
+  "msg bot";
+
+const content =
+  document.createElement("div");
+
+content.className =
+  "chat-item";
+
+div.appendChild(content);
+
+messagesDiv.appendChild(div);
+
+// STREAM READER
+const reader =
+  response.body.getReader();
+
+const decoder =
+  new TextDecoder();
+
+let fullText = "";
+
+try {
+
+  while (true) {
+
+    const {
+      done,
+      value
+    } = await reader.read();
+
+    if (done) {
+
+      break;
+    }
+
+    const chunk =
+      decoder.decode(value);
+
+    fullText += chunk;
+
+    content.innerHTML =
+      marked.parse(fullText);
+
+    // SAVE CHAT
+    localStorage.setItem(
+      "sap-chat-history",
+      messagesDiv.innerHTML
+    );
+
+    messagesDiv.scrollTop =
+      messagesDiv.scrollHeight;
+  }
+
+} catch (err) {
+
+  console.error(
+    "STREAM FRONTEND ERROR",
+    err
+  );
+}
+
+// FINAL AI MESSAGE
+chatHistory.push({
+
+  role: "assistant",
+
+  content: fullText
+});
+
+loadConversations();
+
+return;
+
+      let parsed;
+
+      // SAFE PARSE
+      if (
+        typeof data.value === "string"
+      ) {
+
+        try {
+
+          parsed =
+            JSON.parse(data.value);
+
+        } catch {
+
+          parsed = {
+            text: data.value,
+            actions: []
+          };
+        }
+
+      } else {
+
+        parsed =
+          data.value || data;
+      }
+
+      // RENDER DASHBOARD
+      if (
+        parsed.data &&
+        (
+          parsed.data.score ||
+          parsed.data.skills ||
+          parsed.data.strengths
+        )
+    ) {
+
+        renderAnalysisCards(
+          parsed.data
+        );
+        renderAnalytics(
+  parsed.data
+);
+    }
+
+      // CLEAN TEXT
+      let msgText =
+        parsed.text ||
+        parsed.message ||
+        "";
+
+      // BEAUTIFUL RESPONSE
+      let finalText = "🤖";
+
+      if (msgText) {
+
+        finalText +=
+          "\n\n" + msgText;
+      }
+
+      // KEY POINTS
+if (
+  parsed.data &&
+  parsed.data.keyPoints &&
+  parsed.data.keyPoints.length
+) {
+
+  finalText +=
+    "\n\n📌 Key Points:\n";
+
+  parsed.data.keyPoints
+    .forEach(p => {
+
+      finalText +=
+        "\n• " + p;
+    });
+}
+
+// SKILLS
+if (
+  parsed.data &&
+  parsed.data.skills &&
+  parsed.data.skills.length
+) {
+
+  finalText +=
+    "\n\n🛠 Skills:\n";
+
+  parsed.data.skills
+    .forEach(s => {
+
+      finalText +=
+        "\n• " + s;
+    });
+}
+
+// PROJECTS
+if (
+  parsed.data &&
+  parsed.data.projects &&
+  parsed.data.projects.length
+) {
+
+  finalText +=
+    "\n\n🚀 Projects:\n";
+
+  parsed.data.projects
+  .forEach(p => {
+
+    // STRING PROJECT
+    if (typeof p === "string") {
+
+      finalText +=
+        "\n• " + p;
+    }
+
+    // OBJECT PROJECT
+    else {
+
+      finalText +=
+        `
+
+• ${p.title || "Project"}
+
+  ${p.description || ""}
+`;
+    }
+  });
+}
+
+// STRENGTHS
+if (
+  parsed.data &&
+  parsed.data.strengths &&
+  parsed.data.strengths.length
+) {
+
+  finalText +=
+    "\n\n💪 Strengths:\n";
+
+  parsed.data.strengths
+    .forEach(s => {
+
+      finalText +=
+        "\n• " + s;
+    });
+}
+
+// WEAKNESSES
+if (
+  parsed.data &&
+  parsed.data.weaknesses &&
+  parsed.data.weaknesses.length
+) {
+
+  finalText +=
+    "\n\n⚠ Weaknesses:\n";
+
+  parsed.data.weaknesses
+    .forEach(w => {
+
+      finalText +=
+        "\n• " + w;
+    });
+}
+
+// INTERVIEW QUESTIONS
+if (
+  parsed.data &&
+  parsed.data.interviewQuestions &&
+  parsed.data.interviewQuestions.length
+) {
+
+  finalText +=
+    "\n\n🎯 Interview Questions:\n";
+
+  parsed.data.interviewQuestions
+    .forEach(q => {
+
+      finalText +=
+        "\n• " + q;
+    });
+}
+      // SCORE
+      if (
+        parsed.data &&
+        parsed.data.score
+      ) {
+
+        finalText +=
+          "\n\n📊 Resume Score: " +
+          parsed.data.score +
+          "/10";
+      }
+
+      // ROLE MATCH
+      if (
+        parsed.data &&
+        parsed.data.roleMatch
+      ) {
+
+        finalText +=
+          "\n\n💼 Best Role Match: " +
+          parsed.data.roleMatch;
+      }
+
+      // =====================================
+// RENDER MATCH CARDS
+// =====================================
+if (
+  parsed.matches &&
+  parsed.matches.length
+) {
+
+  renderResumeCards(
+    parsed.matches
+  );
+}
+
+      addMessage(
+        finalText,
+        "bot",
+        parsed.actions || []
+      );
+
+      chatHistory.push({
+        role: "assistant",
+        content: finalText
+      });
+
+      loadConversations();
+    }
+    // =========================
+    // ACTION HANDLER
+    // =========================
+    function handleAction(action) {
+
+      if (
+        action ===
+        "Send Reminder Email"
+      ) {
+
+        sendQuick(
+          "send reminder"
+        );
+      }
+
+      if (
+        action ===
+        "Open Leave Portal"
+      ) {
+
+        alert(
+          "Opening SuccessFactors..."
+        );
+      }
+
+      if (
+        action ===
+        "Open IT Portal"
+      ) {
+
+        alert(
+          "Opening IT Portal..."
+        );
+      }
+    }
+
+    function sendQuick(text) {
+
+      input.value = text;
+
+      send();
+    }
+
+    /// =========================
+// FILE UPLOAD
+// =========================
+async function uploadFile() {
+
+  const file =
+    document.getElementById(
+      "fileInput"
+    ).files[0];
+
+  if (!file) return;
+
+  const formData =
+    new FormData();
+
+  formData.append(
+    "resume",
+    file
+  );
+
+  const res =
+    await fetch(
+      "/upload",
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+
+  const data =
+    await res.json();
+
+window.latestMatchData = data;
+
+console.log(
+  "MATCH DATA:",
+  data
+);
+
+  console.log(
+    "UPLOAD DATA:",
+    data
+  );
+
+  localStorage.setItem(
+    "resumeText",
+    data.preview || ""
+  );
+
+  addMessage(
+    "📄 Resume uploaded successfully.",
+    "bot"
+  );
+
+  // SHOW PREVIEW
+  if (data.preview) {
+
+    addMessage(
+      "📖 Preview:\n\n" +
+      data.preview,
+      "bot"
+    );
+  }
+}
+    async function matchResume() {
+
+  const jd =
+    document.getElementById(
+      "jdInput"
+    ).value.trim();
+
+  if (!jd) {
+
+    alert(
+      "Please paste Job Description"
+    );
+
+    return;
+  }
+
+  addMessage(
+    "📄 Matching resume with JD...",
+    "bot"
+  );
+
+  const res =
+    await fetch(
+      "/copilot/matchResume",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+  jd,
+  resumeText:
+    localStorage.getItem(
+      "resumeText"
+    )
+})
+      }
+    );
+
+  const data =
+    await res.json();
+
+  // DASHBOARD
+
+  console.log("MATCH DATA:", data);
+  renderMatchDashboard(data);
+
+  // CHAT RESPONSE
+  let text =
+    "🤖 JD Match Analysis\n\n";
+
+  text +=
+    "📊 Match Score: " +
+    data.matchScore +
+    "%\n\n";
+
+  // MATCHED SKILLS
+  if (
+    data.matchedSkills &&
+    data.matchedSkills.length
+  ) {
+
+    text +=
+      "✅ Matched Skills:\n";
+
+    data.matchedSkills
+      .forEach(s => {
+
+        text +=
+          "• " + s + "\n";
+      });
+
+    text += "\n";
+  }
+
+  // MISSING SKILLS
+  if (
+    data.missingSkills &&
+    data.missingSkills.length
+  ) {
+
+    text +=
+      "❌ Missing Skills:\n";
+
+    data.missingSkills
+      .forEach(s => {
+
+        text +=
+          "• " + s + "\n";
+      });
+
+    text += "\n";
+  }
+
+  // RECOMMENDATION
+  if (data.recommendation) {
+
+  if (
+  data.missingSkills &&
+  data.missingSkills.length
+) {
+
+  text +=
+    "\n\n🚀 Suggested Improvements:\n";
+
+  data.missingSkills.forEach(s => {
+
+    text +=
+      "• Learn " + s + "\n";
+
+  });
+}
+
+    text +=
+      "💼 Recommendation:\n" +
+
+      data.recommendation;
+  }
+
+  addMessage(text, "bot");
+if (
+  data.matchScore ||
+  data.matchedSkills
+) {
+
+  renderAnalytics(data);
+}
+
+  messagesDiv.scrollTop =
+  messagesDiv.scrollHeight;
+    }
+
+  // =========================
+  // INIT
+  // =========================
+
+  if (!conversationID) {
+    createNewChat();
+  }
+
+  loadConversations();
+
+  loadHistory();
+
+// =========================
+// RESTORE SAVED CHAT
+// =========================
+
+const savedChat =
+  localStorage.getItem(
+    "sap-chat-history"
+  );
+
+if (savedChat) {
+
+  messagesDiv.innerHTML =
+    savedChat;
+
+  messagesDiv.scrollTop =
+    messagesDiv.scrollHeight;
+}
+
+</script>
+
+</body>
+</html>

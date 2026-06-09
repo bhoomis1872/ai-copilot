@@ -1,0 +1,36 @@
+<mvc:View
+    controllerName="chat.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page title="SAP AI Copilot">
+
+        <content>
+
+            <VBox class="sapUiMediumMargin">
+
+                <Title
+                    text="AI Resume Search"
+                    level="H3" />
+
+                <Input
+                    id="resumeSearchInput"
+                    placeholder="Find SAP ABAP candidates" />
+
+                <Button
+                    text="Search Resumes"
+                    press=".onSearchResumes"
+                    type="Emphasized"
+                    class="sapUiSmallMarginTop" />
+
+                <Text
+                    id="searchResults"
+                    class="sapUiMediumMarginTop" />
+
+            </VBox>
+
+        </content>
+
+    </Page>
+
+</mvc:View>

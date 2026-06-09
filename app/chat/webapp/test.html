@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <title>AI Streaming Test</title>
+
+  <style>
+
+    body {
+
+      font-family: Arial, sans-serif;
+
+      background: #f4f4f4;
+
+      padding: 40px;
+    }
+
+    .container {
+
+      max-width: 700px;
+
+      margin: auto;
+
+      background: white;
+
+      padding: 20px;
+
+      border-radius: 10px;
+
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+
+      margin-bottom: 20px;
+    }
+
+    input {
+
+      width: 75%;
+
+      padding: 12px;
+
+      font-size: 16px;
+
+      border: 1px solid #ccc;
+
+      border-radius: 5px;
+    }
+
+    button {
+
+      padding: 12px 20px;
+
+      font-size: 16px;
+
+      background: #0070f2;
+
+      color: white;
+
+      border: none;
+
+      border-radius: 5px;
+
+      cursor: pointer;
+
+      margin-left: 10px;
+    }
+
+    button:hover {
+
+      background: #0057c2;
+    }
+
+    #output {
+
+      margin-top: 30px;
+
+      background: #f9f9f9;
+
+      padding: 20px;
+
+      border-radius: 5px;
+
+      min-height: 150px;
+
+      white-space: pre-wrap;
+
+      line-height: 1.6;
+
+      border: 1px solid #ddd;
+    }
+
+    .typing {
+
+      color: #666;
+
+      margin-top: 10px;
+
+      font-style: italic;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h2>AI Streaming Chat</h2>
+
+    <input
+      type="text"
+      id="msg"
+      placeholder="Type your message..."
+    />
+
+    <button onclick="sendMessage()">
+      Send
+    </button>
+
+    <div class="typing" id="typing">
+    </div>
+
+    <pre id="output"></pre>
+
+  </div>
+
+  <script>
+
+    async function sendMessage() {
+
+      const message =
+        document.getElementById("msg").value;
+
+      const output =
+        document.getElementById("output");
+
+      const typing =
+        document.getElementById("typing");
+
+      // CLEAR OLD RESPONSE
+
+      output.textContent = "";
+
+      typing.textContent =
+        "AI is typing...";
+
+      try {
+
+        // =========================
+        // CALL STREAM API
+        // =========================
+
+        const response =
+          await fetch(
+
+            "/streamChat",
+
+            {
+
+              method: "POST",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+
+                message
+              })
+            }
+          );
+
+        // =========================
+        // STREAM READER
+        // =========================
+
+        const reader =
+          response.body.getReader();
+
+        const decoder =
+          new TextDecoder();
+
+        let result = "";
+
+        while (true) {
+
+          const {
+
+            done,
+            value
+
+          } = await reader.read();
+
+          if (done) {
+
+            typing.textContent = "";
+
+            break;
+          }
+
+          const chunk =
+            decoder.decode(value);
+
+          const lines =
+            chunk.split("\n");
+
+          lines.forEach((line) => {
+
+            if (
+              line.startsWith("data:")
+            ) {
+
+              const token =
+                line.replace(
+                  "data:",
+                  ""
+                );
+
+              // STREAM END
+
+              if (
+                token.trim() === "[DONE]"
+              ) {
+
+                typing.textContent = "";
+
+                return;
+              }
+
+              // APPEND TOKEN
+
+              result += token;
+
+              output.textContent =
+                result;
+            }
+          });
+        }
+
+      } catch (err) {
+
+        console.log(err);
+
+        typing.textContent = "";
+
+        output.textContent =
+          "Streaming failed.";
+      }
+    }
+
+
+async function login() {
+
+  try {
+
+    const res =
+      await fetch("/login", {
+
+        method: "POST",
+
+        headers: {
+
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+
+          username: "admin",
+
+          password: "admin123"
+        })
+      });
+
+    const data =
+      await response.json();
+
+    // SAVE TOKEN
+    localStorage.setItem(
+
+      "token",
+
+      data.token
+    );
+
+    console.log(
+      "JWT Token Saved"
+    );
+
+  } catch (err) {
+
+    console.log(
+      "LOGIN ERROR:",
+      err
+    );
+  }
+}
+
+window.onload = async function () {
+
+  await login();
+
+  console.log(
+    "User authenticated"
+  );
+};
+  </script>
+
+</body>
+
+</html>
